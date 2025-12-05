@@ -1,0 +1,375 @@
+# SHOPIFY MINIMAL THEME — FILES & INSTRUCTIONS
+
+---
+
+This single file contains **all the theme files** you can copy‑paste into Shopify's **Online Store → Themes → Edit code**. Follow the step‑by‑step order below to create a clean, minimal, easy‑to‑update theme using only the colours: **dark blue, red, purple, black, white**.
+
+**Notes before you start**
+- Replace any placeholder product/collection handles with your real ones.
+- Any name containing `Test`, `Test01`, `TEST_` is left for you to edit later.
+- Files are grouped by path; create new files in Shopify with the same relative names.
+- This theme is intentionally minimal: no heavy libraries, fast, mobile‑first.
+
+---
+
+## 1) layout/theme.liquid
+
+```liquid
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>{{ page_title }} - {{ shop.name }}</title>
+    {{ 'theme.css' | asset_url | stylesheet_tag }}
+    {{ 'theme.js' | asset_url | script_tag }}
+    {% if content_for_header %}{{ content_for_header }}{% endif %}
+  </head>
+  <body class="theme-root">
+    {% section 'header' %}
+
+    <main id="MainContent" role="main">
+      {{ content_for_layout }}
+    </main>
+
+    {% section 'footer' %}
+
+    {% if content_for_footer %}{{ content_for_footer }}{% endif %}
+  </body>
+</html>
+```
+
+---
+
+## 2) templates/index.liquid (Homepage)
+
+```liquid
+{% section 'hero-test' %}
+
+<div class="container preview-grid">
+  <section class="preview-column">
+    <h2 class="section-title">Featured Collections</h2>
+    <div class="collections-grid">
+      {% for collection in collections | slice: 0,4 %}
+        <a class="collection-card" href="{{ collection.url }}">
+          <div class="collection-image" style="background-image:url({{ collection.image | img_url: '600x' }})"></div>
+          <div class="collection-name">{{ collection.title }}</div>
+        </a>
+      {% endfor %}
+    </div>
+  </section>
+
+  <aside class="preview-column sidebar">
+    <h3>Quick Links</h3>
+    <ul>
+      <li><a href="/collections/all">All Products (Test01)</a></li>
+      <li><a href="/pages/about">About (Test)</a></li>
+      <li><a href="/pages/contact">Contact</a></li>
+    </ul>
+  </aside>
+</div>
+```
+
+---
+
+## 3) templates/collection.liquid
+
+```liquid
+{% layout none %}
+
+{% paginate collection.products by 12 %}
+  <div class="container">
+    <h1 class="section-title">{{ collection.title }}</h1>
+
+    <div class="products-grid">
+      {% for product in collection.products %}
+        {% include 'product-card', product: product %}
+      {% endfor %}
+    </div>
+
+    <div class="pagination">
+      {% if paginate.previous %}
+        <a href="{{ paginate.previous.url }}">Previous</a>
+      {% endif %}
+      <span>Page {{ paginate.current_page }} / {{ paginate.pages }}</span>
+      {% if paginate.next %}
+        <a href="{{ paginate.next.url }}">Next</a>
+      {% endif %}
+    </div>
+  </div>
+{% endpaginate %}
+```
+
+---
+
+## 4) templates/product.liquid
+
+```liquid
+<div class="container product-page">
+  <div class="product-media">
+    {% if product.images.size > 0 %}
+      <img src="{{ product.images.first | img_url: '800x' }}" alt="{{ product.title }}">
+    {% else %}
+      <div class="media-placeholder">No image (Test)</div>
+    {% endif %}
+  </div>
+
+  <div class="product-info">
+    <h1>{{ product.title }}</h1>
+    <div class="price">{{ product.price | money }}</div>
+    <div class="product-description">{{ product.description }}</div>
+
+    <form method="post" action="/cart/add">
+      <input type="hidden" name="id" value="{{ product.variants.first.id }}">
+      <button type="submit" class="btn btn-primary">Add to cart</button>
+    </form>
+  </div>
+</div>
+```
+
+---
+
+## 5) sections/header.liquid
+
+```liquid
+<header class="site-header">
+  <div class="container header-inner">
+    <div class="brand">
+      <a href="/">{{ shop.name | default: 'Test Shop' }}</a>
+    </div>
+
+    <nav class="main-nav">
+      <a href="/collections/all">Products</a>
+      {% for link in linklists.main-menu.links limit:4 %}
+        <a href="{{ link.url }}">{{ link.title }}</a>
+      {% endfor %}
+    </nav>
+
+    <div class="header-actions">
+      <a class="cart-link" href="/cart">Cart</a>
+      <button id="mobileMenuToggle" class="mobile-toggle">Menu</button>
+    </div>
+  </div>
+</header>
+
+<nav id="mobileMenu" class="mobile-menu">
+  <a href="/collections/all">All Products (Test01)</a>
+  <a href="/pages/about">About</a>
+  <a href="/pages/contact">Contact</a>
+</nav>
+```
+
+---
+
+## 6) sections/footer.liquid
+
+```liquid
+<footer class="site-footer">
+  <div class="container footer-inner">
+    <div class="footer-left">
+      <h4>{{ shop.name | default: 'Test' }}</h4>
+      <p>© {{ 'now' | date: '%Y' }} {{ shop.name }}</p>
+    </div>
+    <div class="footer-right">
+      <nav>
+        <a href="/pages/privacy-policy">Privacy</a>
+        <a href="/pages/terms">Terms</a>
+      </nav>
+    </div>
+  </div>
+</footer>
+```
+
+---
+
+## 7) sections/hero-test.liquid (Minimal entrance / preview area)
+
+```liquid
+<section class="hero" aria-label="hero-test">
+  <div class="hero-inner container">
+    <div class="hero-left">
+      <h1 class="hero-title">Welcome to Test Shop</h1>
+      <p class="hero-sub">Simple, clean, minimal. Scroll to preview collections and products.</p>
+      <a class="btn btn-primary" href="/collections/all">Shop Test01</a>
+    </div>
+    <div class="hero-right">
+      <div class="hero-preview">
+        {% for prod in collections.frontpage.products limit:4 %}
+          <div class="preview-item">
+            <img src="{{ prod.featured_image | img_url: '200x' }}" alt="{{ prod.title }}">
+          </div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+</section>
+```
+
+---
+
+## 8) snippets/product-card.liquid
+
+```liquid
+<article class="product-card">
+  <a href="{{ product.url }}">
+    <div class="product-thumb">
+      {% if product.featured_image %}
+        <img src="{{ product.featured_image | img_url: '360x' }}" alt="{{ product.title }}">
+      {% else %}
+        <div class="thumb-placeholder">No img</div>
+      {% endif %}
+    </div>
+    <div class="product-meta">
+      <h3>{{ product.title }}</h3>
+      <div class="price">{{ product.price | money }}</div>
+    </div>
+  </a>
+</article>
+```
+
+---
+
+## 9) assets/theme.css
+
+```css
+:root{
+  --color-darkblue: #0b2545; /* dark blue */
+  --color-red: #c62828;      /* red */
+  --color-purple: #5e2a7e;  /* purple */
+  --color-black: #000000;    /* black */
+  --color-white: #ffffff;    /* white */
+
+  --brand: var(--color-darkblue);
+  --accent: var(--color-red);
+  --accent-2: var(--color-purple);
+  --bg: var(--color-white);
+  --muted: #f3f4f6;
+}
+
+*{box-sizing:border-box}
+body{font-family:system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial; margin:0; color:var(--color-black); background:var(--bg)}
+.container{max-width:1100px;margin:0 auto;padding:20px}
+
+/* Header */
+.site-header{background:var(--bg);border-bottom:1px solid rgba(0,0,0,0.06)}
+.header-inner{display:flex;align-items:center;justify-content:space-between}
+.brand a{font-weight:700;color:var(--brand);text-decoration:none}
+.main-nav a{margin:0 10px;text-decoration:none;color:var(--color-black)}
+.header-actions{display:flex;gap:10px;align-items:center}
+.mobile-toggle{display:none}
+
+/* Hero */
+.hero{padding:40px 0}
+.hero-inner{display:flex;gap:20px;align-items:center}
+.hero-title{font-size:30px;margin:0 0 8px;color:var(--brand)}
+.hero-sub{margin:0 0 16px;color:var(--color-black)}
+.btn{display:inline-block;padding:10px 14px;border-radius:8px;text-decoration:none}
+.btn-primary{background:var(--accent);color:var(--color-white)}
+
+/* Preview grid - appears everywhere as user scrolls */
+.preview-grid{display:grid;grid-template-columns:1fr 300px;gap:24px}
+.preview-column{background:transparent}
+.sidebar{background:var(--muted);padding:16px;border-radius:8px}
+.section-title{font-size:20px;color:var(--accent-2);margin-bottom:12px}
+.collections-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
+.collection-card{display:block;text-decoration:none;color:inherit;background:var(--bg);padding:8px;border-radius:8px;border:1px solid rgba(0,0,0,0.06)}
+.collection-image{height:120px;background-size:cover;background-position:center;border-radius:6px}
+.collection-name{margin-top:8px;font-weight:600}
+
+/* Products grid */
+.products-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:14px}
+.product-card{background:var(--bg);border-radius:8px;border:1px solid rgba(0,0,0,0.06);overflow:hidden}
+.product-thumb img{width:100%;height:160px;object-fit:cover}
+.product-meta{padding:10px}
+.price{font-weight:700;color:var(--brand)}
+
+/* Footer */
+.site-footer{border-top:1px solid rgba(0,0,0,0.06);padding:20px 0;margin-top:40px}
+.footer-inner{display:flex;justify-content:space-between;align-items:center}
+
+/* Product page */
+.product-page{display:grid;grid-template-columns:1fr 420px;gap:24px;align-items:start}
+.product-media img{width:100%;border-radius:8px}
+.media-placeholder{height:300px;background:var(--muted);display:flex;align-items:center;justify-content:center}
+
+/* Responsive */
+@media (max-width:900px){
+  .preview-grid{grid-template-columns:1fr}
+  .product-page{grid-template-columns:1fr}
+  .main-nav{display:none}
+  .mobile-toggle{display:inline-block}
+  #mobileMenu{display:none}
+}
+
+/* Minimal focus and accessibility */
+a:focus{outline:3px solid var(--accent-2);outline-offset:2px}
+button{cursor:pointer}
+```
+
+---
+
+## 10) assets/theme.js
+
+```javascript
+// Minimal JS for mobile menu and simple interactions
+document.addEventListener('DOMContentLoaded', function(){
+  var mobileToggle = document.getElementById('mobileMenuToggle');
+  var mobileMenu = document.getElementById('mobileMenu');
+  if(mobileToggle && mobileMenu){
+    mobileToggle.addEventListener('click', function(){
+      var open = mobileMenu.style.display === 'block';
+      mobileMenu.style.display = open ? 'none' : 'block';
+    });
+  }
+});
+```
+
+---
+
+## 11) config/settings_schema.json (minimal so Shopify editor won't break)
+
+```json
+[
+  {
+    "name": "Theme",
+    "settings": [
+      {"type":"text","id":"store_tagline","label":"Store Tagline","default":"Test store tagline"}
+    ],
+    "presets": [{"name":"Default","category":"Test"}]
+  }
+]
+```
+
+---
+
+## 12) pages: add two simple pages in Shopify Admin (not code files):
+- **About** — Title: Test — Content: "This is the Test About page." 
+- **Contact** — Title: Contact — Content: add your contact details or a simple form app.
+
+---
+
+### STEP-BY-STEP (How to paste into Shopify)
+1. In Shopify Admin go to **Online Store → Themes → ... (your theme) → Edit code**.
+2. Create a new file under **layout** called `theme.liquid` and paste the content from section #1.
+3. Under **templates** create `index.liquid`, `collection.liquid`, `product.liquid` and paste respective contents (#2,#3,#4).
+4. Under **sections** create `header.liquid`, `footer.liquid`, `hero-test.liquid` and paste (#5,#6,#7).
+5. Under **snippets** create `product-card.liquid` and paste (#8).
+6. Under **assets** create `theme.css` and `theme.js` and paste (#9,#10).
+7. Under **config** create `settings_schema.json` and paste (#11).
+8. Save everything. Go to your store preview — homepage will use `index.liquid` and show the hero + preview.
+
+---
+
+### QUICK CUSTOMIZATION NOTES
+- Colors are defined in `assets/theme.css` as CSS variables — change `--color-darkblue`, `--color-red`, `--color-purple` to tweak brand hues.
+- Replace `collections.frontpage` with your actual collection handle or create a collection named `frontpage`.
+- Replace any `Test` / `Test01` placeholder text with your real names, product handles, or collection handles.
+- To add categories later: create Shopify Collections and they will appear in the Collections area; use navigation editor to add links.
+
+---
+
+If you want, I can also:
+- Give you a ready list of `collection handles` and `sample product handles` to paste into the templates.
+- Convert this into a downloadable zip file with proper folder structure.
+
+That's everything — copy these files into Shopify's Edit code and you'll have a clean, minimal theme using only the requested colors. Good luck customizing it!
